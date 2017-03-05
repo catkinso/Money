@@ -3,6 +3,7 @@
 #import "ViewControllerList.h"
 #import "ViewControllerNew.h"
 #import "ViewControllerUtil.h"
+#import "ViewTransaction.h"
 #import "DataManager.h"
 #import "Transaction.h"
 
@@ -14,29 +15,23 @@
     ViewControllerNew *vcn;
     ViewControllerUtil *vcu;
     
+    ViewTransaction *vt;
+    
     UILabel *sumLabel;
-    UILabel *dateLabel;
-    UILabel *catLabel;
-    UILabel *descLabel;
-    UILabel *costLabel;
+    UILabel *lastTransactionTitleLabel;
 }
 
-- (void)viewDidLoad {
+
+- (void)viewDidLoad
+{
     CGRect rect;
     
     UILabel *summaryTitleLabel;
     UILabel *sumTitleLabel;
-    UILabel *latestTransactionTitleLabel;
-    UILabel *dateTitleLabel;
-    UILabel *catTitleLabel;
-    UILabel *descTitleLabel;
-    UILabel *costTitleLabel;
     
     UIButton *listButton;
     UIButton *newTransactionButton;
     UIButton *utilitiesButton;
-    
-    CAShapeLayer *rectLayer;
     
     
     [super viewDidLoad];
@@ -115,115 +110,56 @@
     
     /* Last transaction title label */
     rect = CGRectMake(30.0, 460.0, 110.0, 20.0);
-    latestTransactionTitleLabel = [[UILabel alloc] initWithFrame:rect];
-    [latestTransactionTitleLabel setFont:[latestTransactionTitleLabel.font
-                                     fontWithSize:12]];
-    latestTransactionTitleLabel.text = @"Latest Transaction";
-    latestTransactionTitleLabel.textColor = [UIColor grayColor];
-    [self.view addSubview:latestTransactionTitleLabel];
+    lastTransactionTitleLabel = [[UILabel alloc] initWithFrame:rect];
+    [lastTransactionTitleLabel setFont:[lastTransactionTitleLabel.font
+                                   fontWithSize:12]];
+    lastTransactionTitleLabel.text = @"Last Transaction";
+    lastTransactionTitleLabel.textColor = [UIColor grayColor];
+    [self.view addSubview:lastTransactionTitleLabel];
     
     
-    /* Last transaction box */
-    rect = CGRectMake(25.0, 480.0, 320.0, 100.0);
-    rectLayer = [CAShapeLayer layer];
-    [rectLayer setPath:[[UIBezierPath bezierPathWithRect:rect] CGPath]];
-    [rectLayer setFillColor:[[UIColor clearColor] CGColor]];
-    [rectLayer setStrokeColor:[[UIColor blackColor] CGColor]];
-    [[self.view layer] addSublayer:rectLayer];
-
-    
-    /* Last transaction date labels */
-    rect = CGRectMake(30.0, 490.0, 100.0, 20.0);
-    dateTitleLabel = [[UILabel alloc] initWithFrame:rect];
-    [dateTitleLabel setFont: [dateTitleLabel.font fontWithSize:12]];
-    dateTitleLabel.text = @"Date";
-    [self.view addSubview:dateTitleLabel];
-    
-    rect = CGRectMake(130.0, 490.0, 200.0, 20.0);
-    dateLabel = [[UILabel alloc] initWithFrame:rect];
-    [dateLabel setFont: [dateLabel.font fontWithSize:12]];
-    [self.view addSubview:dateLabel];
-    
-    
-    /* Last transaction category labels */
-    rect = CGRectMake(30.0, 510.0, 100.0, 20.0);
-    catTitleLabel = [[UILabel alloc] initWithFrame:rect];
-    [catTitleLabel setFont:[catTitleLabel.font fontWithSize:12]];
-    catTitleLabel.text = @"Category";
-    [self.view addSubview:catTitleLabel];
-    
-    rect = CGRectMake(130.0, 510.0, 100.0, 20.0);
-    catLabel = [[UILabel alloc] initWithFrame:rect];
-    [catLabel setFont:[catTitleLabel.font fontWithSize:12]];
-    [self.view addSubview:catLabel];
-
-    
-    /* Last transaction description labels */
-    rect = CGRectMake(30.0, 530.0, 100.0, 20.0);
-    descTitleLabel = [[UILabel alloc] initWithFrame:rect];
-    [descTitleLabel setFont:[descTitleLabel.font fontWithSize:12]];
-    descTitleLabel.text = @"Description";
-    [self.view addSubview:descTitleLabel];
-    
-    rect = CGRectMake(130.0, 530.0, 200.0, 20.0);
-    descLabel = [[UILabel alloc] initWithFrame:rect];
-    [descLabel setFont:[descLabel.font fontWithSize:12]];
-    [self.view addSubview:descLabel];
-
-    
-    /* Last transaction cost labels */
-    rect = CGRectMake(30.0, 550.0, 100.0, 20.0);
-    costTitleLabel = [[UILabel alloc] initWithFrame:rect];
-    [costTitleLabel setFont: [costTitleLabel.font fontWithSize:12]];
-    costTitleLabel.text = @"Cost";
-    [self.view addSubview:costTitleLabel];
-    
-    rect = CGRectMake(130.0, 550.0, 100.0, 20.0);
-    costLabel = [[UILabel alloc] initWithFrame:rect];
-    [costLabel setFont: [costTitleLabel.font fontWithSize:12]];
-    [self.view addSubview:costLabel];
+    /* Last transaction view */
+    rect = CGRectMake(20.0, 475.0, 330.0, 110.0);
+    vt = [[ViewTransaction alloc] initWithFrame:rect];
 }
 
 
-- (void)viewWillAppear:(BOOL)animated {
+- (void)viewWillAppear:(BOOL)animated
+{
     int d, c;
-    Transaction *lastTransaction;
     
+    /* Update amount in sum amount label */
     [dm getTotalDollars:&d Cents:&c];
     sumLabel.text = [NSString stringWithFormat:@"$%d.%02d", d, c];
 
-    lastTransaction = [dm getLastTransaction];
-    if (lastTransaction == nil) {
-        catLabel.text = @"-";
-        descLabel.text = @"-";
-        costLabel.text = @"0.00";
-        dateLabel.text = @"-";
+    
+    /* Add or remove last transaction label and view */
+    vt.transactionToShow = [dm getLastTransaction];
+    if (vt.transactionToShow != nil) {
+        [self.view addSubview:vt];
+        [self.view addSubview:lastTransactionTitleLabel];
     }
     else {
-        catLabel.text = lastTransaction.category;
-        descLabel.text = lastTransaction.desc;
-        costLabel.text = [NSString stringWithFormat:@"$%d.%02d",
-                             (int)lastTransaction.costDollars,
-                             (int)lastTransaction.costCents];
-        dateLabel.text = [NSDateFormatter
-                             localizedStringFromDate:lastTransaction.date
-                             dateStyle:NSDateFormatterShortStyle
-                             timeStyle:NSDateFormatterShortStyle];
+        [vt removeFromSuperview];
+        [lastTransactionTitleLabel removeFromSuperview];
     }
 }
 
 
-- (void)eventButtonClicked {
+- (void)eventButtonClicked
+{
     [self presentViewController:vcl animated:NO completion:nil];
 }
 
 
-- (void)newTransactionButtonClicked {
+- (void)newTransactionButtonClicked
+{
     [self presentViewController:vcn animated:NO completion:nil];
 }
 
 
-- (void)utilitiesButtonClicked {
+- (void)utilitiesButtonClicked
+{
     [self presentViewController:vcu animated:NO completion:nil];
 }
 
