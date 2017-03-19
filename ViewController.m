@@ -17,6 +17,9 @@
     
     ViewTransaction *vt;
     
+    UILabel *dailySumLabel;
+    UILabel *weeklySumLabel;
+    UILabel *monthlySumLabel;
     UILabel *sumLabel;
     UILabel *lastTransactionTitleLabel;
 }
@@ -27,6 +30,9 @@
     CGRect rect;
     
     UILabel *summaryTitleLabel;
+    UILabel *dailySumTitleLabel;
+    UILabel *weeklySumTitleLabel;
+    UILabel *monthlySumTitleLabel;
     UILabel *sumTitleLabel;
     
     UIButton *listButton;
@@ -96,7 +102,48 @@
                          forState:UIControlStateHighlighted];
     [self.view addSubview:utilitiesButton];
 
-
+    
+    /* Daily sum amount labels */
+    rect = CGRectMake(30.0, 330.0, 90.0, 20.0);
+    dailySumTitleLabel = [[UILabel alloc] initWithFrame:rect];
+    [dailySumTitleLabel setFont:[dailySumTitleLabel.font
+                                   fontWithSize:12]];
+    dailySumTitleLabel.text = @"Daily Total:";
+    [self.view addSubview:dailySumTitleLabel];
+    
+    rect = CGRectMake(130.0, 330.0, 100.0, 20.0);
+    dailySumLabel = [[UILabel alloc] initWithFrame:rect];
+    [dailySumLabel setFont:[dailySumLabel.font fontWithSize:12]];
+    [self.view addSubview:dailySumLabel];
+    
+    
+    /* Weekly sum amount labels */
+    rect = CGRectMake(30.0, 350.0, 90.0, 20.0);
+    weeklySumTitleLabel = [[UILabel alloc] initWithFrame:rect];
+    [weeklySumTitleLabel setFont:[weeklySumTitleLabel.font
+                                   fontWithSize:12]];
+    weeklySumTitleLabel.text = @"Weekly Total:";
+    [self.view addSubview:weeklySumTitleLabel];
+    
+    rect = CGRectMake(130.0, 350.0, 100.0, 20.0);
+    weeklySumLabel = [[UILabel alloc] initWithFrame:rect];
+    [weeklySumLabel setFont:[weeklySumTitleLabel.font fontWithSize:12]];
+    [self.view addSubview:weeklySumLabel];
+    
+    
+    /* Monthly sum amount labels */
+    rect = CGRectMake(30.0, 370.0, 90.0, 20.0);
+    monthlySumTitleLabel = [[UILabel alloc] initWithFrame:rect];
+    [monthlySumTitleLabel setFont:[monthlySumTitleLabel.font fontWithSize:12]];
+    monthlySumTitleLabel.text = @"Monthly Total:";
+    [self.view addSubview:monthlySumTitleLabel];
+    
+    rect = CGRectMake(130.0, 370.0, 100.0, 20.0);
+    monthlySumLabel = [[UILabel alloc] initWithFrame:rect];
+    [monthlySumLabel setFont:[monthlySumTitleLabel.font fontWithSize:12]];
+    [self.view addSubview:monthlySumLabel];
+    
+    
     /* Sum amount labels */
     rect = CGRectMake(30.0, 410.0, 140.0, 25.0);
     sumTitleLabel = [[UILabel alloc] initWithFrame:rect];
@@ -126,11 +173,18 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    int d, c;
+    Sums s;
     
-    /* Update amount in sum amount label */
-    [dm getTotalDollars:&d Cents:&c];
-    sumLabel.text = [NSString stringWithFormat:@"$%d.%02d", d, c];
+    /* Update amount in total amount labels */
+    [dm getSums:&s];
+    dailySumLabel.text = [NSString stringWithFormat:@"$%d.%02d",
+                             s.dailyTotalDollars, s.dailyTotalCents];
+    weeklySumLabel.text = [NSString stringWithFormat:@"$%d.%02d",
+                              s.weeklyTotalDollars, s.weeklyTotalCents];
+    monthlySumLabel.text = [NSString stringWithFormat:@"$%d.%02d",
+                               s.monthlyTotalDollars, s.monthlyTotalCents];
+    sumLabel.text = [NSString stringWithFormat:@"$%d.%02d",
+                        s.totalDollars, s.totalCents];
 
     
     /* Add or remove last transaction label and view */

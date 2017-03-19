@@ -16,26 +16,76 @@
 }
 
 
-- (void)getTotalDollars:(int *)d Cents:(int *)c
+- (void)getSums:(Sums *)s
 {
     int i;
-    int totalDollars, totalCents;
+    NSCalendar *calendar;
+    NSDate *now;
+    NSCalendarUnit calendarUnits;
+    NSDateComponents *dateComponents;
+    NSInteger currentYear, currentMonth, currentWeek, currentDay;
+    int dollars, cents;
+    int dailyDollars, dailyCents;
+    int monthlyDollars, monthlyCents;
+    int weeklyDollars, weeklyCents;
     
-    *d = *c = 0;
+    if (s == NULL)
+        return;
+    
+    s->dailyTotalDollars = s->dailyTotalCents = 0;
+    s->monthlyTotalDollars = s->monthlyTotalCents = 0;
+    s->weeklyTotalDollars = s-> weeklyTotalCents = 0;
+    s->totalDollars = s->totalCents = 0;
     
     if (transactions == nil)
         return;
     
-    totalDollars = totalCents = 0;
+    calendar = [[NSCalendar alloc] initWithCalendarIdentifier
+                                       :NSCalendarIdentifierGregorian];
+    now = [[NSDate alloc] init];
+    calendarUnits = NSCalendarUnitYear | NSCalendarUnitMonth
+                        | NSCalendarUnitDay | NSCalendarUnitWeekOfYear;
+    dateComponents = [calendar components:calendarUnits fromDate:now];
+    currentYear = [dateComponents year];
+    currentMonth = [dateComponents month];
+    currentWeek = [dateComponents weekOfYear]; 
+    currentDay = [dateComponents day];
+     
+    dollars = cents = dailyDollars = dailyCents = 0;
+    monthlyDollars = monthlyCents = weeklyDollars = weeklyCents = 0;
     for (i = 0; i < [transactions count]; i++) {
         Transaction *t = [transactions objectAtIndex:i];
         
-        totalDollars += t.costDollars;
-        totalCents += t.costCents;
+        dateComponents = [calendar components:calendarUnits fromDate:t.date];
+        if (currentYear == [dateComponents year]) {
+            dollars += t.costDollars;
+            cents += t.costCents;
+            
+            if (currentMonth == [dateComponents month]) {
+                monthlyDollars += t.costDollars;
+                monthlyCents += t.costCents;
+                
+                if (currentWeek == [dateComponents weekOfYear]) {
+                    weeklyDollars += t.costDollars;
+                    weeklyCents += t.costCents;
+                }
+
+                if (currentDay == [dateComponents day]) {
+                    dailyDollars += t.costDollars;
+                    dailyCents += t.costCents;
+                }   
+            }
+        }
     }
     
-    *d = totalDollars + (totalCents / 100);
-    *c = totalCents % 100;
+    s->totalDollars = dollars + (cents / 100);
+    s->totalCents = cents % 100;
+    s->monthlyTotalDollars = monthlyDollars + (monthlyCents / 100);
+    s->monthlyTotalCents = monthlyCents % 100;
+    s->dailyTotalDollars = dailyDollars + (dailyCents / 100);
+    s->dailyTotalCents = dailyCents % 100;
+    s->weeklyTotalDollars = weeklyDollars + (weeklyCents / 100);
+    s->weeklyTotalCents = weeklyCents % 100;
 }
 
 

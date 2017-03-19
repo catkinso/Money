@@ -1,11 +1,23 @@
 #import <Foundation/Foundation.h>
 
+struct sums_t {
+    int dailyTotalDollars;
+    int dailyTotalCents;
+    int weeklyTotalDollars;
+    int weeklyTotalCents;
+    int monthlyTotalDollars;
+    int monthlyTotalCents;
+    int totalDollars;
+    int totalCents;
+};
+typedef struct sums_t Sums;
+
 @class Transaction;
 
 @interface DataManager : NSObject
     
 - (Transaction *)getLastTransaction;
-- (void)getTotalDollars:(int *)d Cents:(int *)c;
+- (void)getSums:(Sums *)s;
 - (int)getNumTransactions;
 - (Transaction *)getTransactionAtIndex:(int)index;
 - (NSArray *)getLastThreeTransactions;
