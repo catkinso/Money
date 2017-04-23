@@ -2,7 +2,7 @@
 
 @class DataManager;
 
-@interface ViewControllerList : UIViewController
+@interface ViewControllerList : UIViewController <UIScrollViewDelegate>
 
 - (id)initWithDataManager:(DataManager *)dataMgr;
 

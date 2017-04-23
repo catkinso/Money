@@ -8,17 +8,21 @@
 @implementation ViewControllerList
 {
     DataManager *dm;
-    Transaction *ts[3];
+    Transaction *ts[5];
     ViewControllerNew *vcn;
 
-    ViewTransaction *vts[3];
+    ViewTransaction *vts[5];
+    
+    UIScrollView *uisv;
     
     UIButton *backButton;
-    UIButton *editButtons[3];
-    UIButton *deleteButtons[3];
+    UIButton *editButtons[5];
+    UIButton *deleteButtons[5];
     
     UILabel *totalTransactionsLabel;
-    UILabel *numTransactionLabels[3];
+    UILabel *numTransactionLabels[5];
+    
+    int topDisplayedIdx;
 }
 
 
@@ -78,13 +82,22 @@
     rect = CGRectMake(190.0, 150, 80.0, 25.0);
     totalTransactionsLabel = [[UILabel alloc] initWithFrame:rect];
     [self.view addSubview:totalTransactionsLabel];
-
     
+    
+    /* Scroll view */
+    rect = CGRectMake(0, 180.0, 375.0, 420.0);
+    uisv = [[UIScrollView alloc] initWithFrame:rect];
+    //[uisv setBackgroundColor:[UIColor yellowColor]];
+    [uisv setContentSize:CGSizeMake(375.0, 700.0)];
+    uisv.showsVerticalScrollIndicator = NO;
+    uisv.delegate = self;
+    [self.view addSubview:uisv];
+
     /* Three transactions */
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 5; i++) {
         
         /* Transaction number label */
-        rect = CGRectMake(30.0, 180.0 + (140.0 * i), 50.0, 20.0);
+        rect = CGRectMake(30.0, 10.0 + (140.0 * i), 50.0, 20.0);
         numTransactionLabels[i] = [[UILabel alloc] initWithFrame:rect];
         [numTransactionLabels[i] setFont:[numTransactionLabels[i].font
                                      fontWithSize:12]];
@@ -92,9 +105,9 @@
         numTransactionLabels[i].textColor = [UIColor grayColor];
         numTransactionLabels[i].textAlignment = NSTextAlignmentLeft;
         
-        
+
         /* Transaction edit button */
-        rect = CGRectMake(310.0, 180.0 + (140.0 * i), 25.0, 20.0);
+        rect = CGRectMake(310.0, 10.0 + (140.0 * i), 25.0, 20.0);
         editButtons[i] = [[UIButton alloc] initWithFrame:rect];
         [editButtons[i] addTarget:self action:@selector(editButtonsClicked:)
                             forControlEvents:UIControlEventTouchUpInside];
@@ -108,9 +121,9 @@
         [editButtons[i] setTitleColor:[UIColor grayColor]
                             forState:UIControlStateHighlighted];
      
-
+        
         /* Transaction view */        
-        rect = CGRectMake(20.0, 195.0 + (140.0 * i), 330.0, 110.0);
+        rect = CGRectMake(20.0, 25.0 + (140.0 * i), 330.0, 110.0);
         vts[i] = [[ViewTransaction alloc] initWithFrame:rect];
     }
 }
@@ -119,32 +132,40 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     int numTransactions;
+    
+    /* Update number of transactions label */
+    numTransactions = [dm getNumTransactions];
+    totalTransactionsLabel.text = [[NSString alloc]
+                                   initWithFormat:@"%d", numTransactions];
+    
+    topDisplayedIdx = numTransactions - 1;
+    [uisv setContentOffset:CGPointMake(0, 0)];
+    [self updateTransactionLabels];
+}
+
+
+- (void)updateTransactionLabels
+{
     int currentIdx;
     int i;
 
-    /* Update number of tranactions label */    
-    numTransactions = [dm getNumTransactions];
-    totalTransactionsLabel.text = [[NSString alloc]
-                                      initWithFormat:@"%d", numTransactions];
-
-
-    /* Add and update up to 3 transaction views, transaction number labels
+    /* Add and update up to 5 transaction views, transaction number labels
        and edit buttons */
-    currentIdx = numTransactions - 1;
-    for (i = 0; i < 3; i++) {
+    currentIdx = topDisplayedIdx;
+    for (i = 0; i < 5; i++) {
         if (currentIdx >= 0) {
             numTransactionLabels[i].text = [[NSString alloc]
                                        initWithFormat:@"%05d", currentIdx + 1];
             vts[i].transactionToShow = [dm getTransactionAtIndex:currentIdx];
 
             if ([numTransactionLabels[i] superview] == nil)
-                [self.view addSubview:numTransactionLabels[i]];
+                [uisv addSubview:numTransactionLabels[i]];
             
             if ([editButtons[i] superview] == nil)
-                [self.view addSubview:editButtons[i]];
+                [uisv addSubview:editButtons[i]];
             
             if ([vts[i] superview] == nil)
-                [self.view addSubview:vts[i]];
+                [uisv addSubview:vts[i]];
         }
         else {
             if ([numTransactionLabels[i] superview] != nil)
@@ -167,7 +188,7 @@
     UIButton *b;
     
     b = (UIButton *)sender;
-    tIdx = [dm getNumTransactions] - 1;
+    tIdx = topDisplayedIdx;
     
     if (b == editButtons[0])
         tIdx -= 0;
@@ -175,11 +196,35 @@
         tIdx -= 1;
     else if (b == editButtons[2])
         tIdx -= 2;
+    else if (b == editButtons[3])
+        tIdx -= 3;
+    else if (b == editButtons[4])
+        tIdx -= 4;
     
     if (tIdx >= 0) {
         vcn = [[ViewControllerNew alloc] initWithDataManager:dm
                   transaction:[dm getTransactionAtIndex:tIdx]];
         [self presentViewController:vcn animated:NO completion:nil];
+    }
+}
+
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    int prevTopDisplayedIdx;
+    
+    prevTopDisplayedIdx = topDisplayedIdx;
+    if (scrollView.contentOffset.y > 280 && topDisplayedIdx >= 5) {
+        topDisplayedIdx--;
+    }
+    else if (scrollView.contentOffset.y < 0
+                && topDisplayedIdx < [dm getNumTransactions] - 1) {
+        topDisplayedIdx++;
+    }
+    
+    if (prevTopDisplayedIdx != topDisplayedIdx) {
+        [self updateTransactionLabels];
+        [scrollView setContentOffset:CGPointMake(0, 140)];
     }
 }
 
