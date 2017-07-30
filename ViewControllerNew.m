@@ -18,6 +18,9 @@
     
     UILabel *errorLabel;
     UILabel *newTitleLabel;
+    
+    UILabel *dateLabel;
+    NSDate *date;
 }
 
 - (id)initWithDataManager:(DataManager *)dataMgr
@@ -78,7 +81,7 @@
 
     
     /* Enter button */
-    rect = CGRectMake(30.0, 280.0, 60.0, 25.0);
+    rect = CGRectMake(30.0, 330.0, 60.0, 25.0);
     enterButton = [[UIButton alloc] initWithFrame:rect];
     [enterButton addTarget:self action:@selector(enterButtonClicked)
                      forControlEvents:UIControlEventTouchUpInside];
@@ -93,7 +96,7 @@
     
     
     /* Error label */
-    rect = CGRectMake(30.0, 255.0, 300.0, 30.0);
+    rect = CGRectMake(30.0, 305.0, 300.0, 30.0);
     errorLabel = [[UILabel alloc] initWithFrame:rect];
     [errorLabel setFont:[newTitleLabel.font fontWithSize:12]];
     errorLabel.textColor = [UIColor redColor];
@@ -153,16 +156,30 @@
     [categoryPicker setDelegate:self];
     [categoryPicker setDataSource:self];
     [self.view addSubview:categoryPicker];
+    
+    
+    /* Date */
+    rect = CGRectMake(30.0, 270.0, 100.0, 25.0);
+    dateLabel = [[UILabel alloc] initWithFrame:rect];
+    [dateLabel setFont:[dateLabel.font fontWithSize:16]];
+    [self.view addSubview:dateLabel];
 }
 
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    NSDateFormatter *df;
+    
+    df = [[NSDateFormatter alloc] init];
+    [df setDateFormat:@"MM/dd/yyyy"];
+    
     if (t == nil) {
         newTitleLabel.text = @"New Transaction";
         descTextField.text = @"";
         costTextField.text = @"";
         [categoryPicker selectRow:4 inComponent:0 animated:YES];
+        date = [NSDate date];
+        dateLabel.text = [df stringFromDate:date];
     }
     else {
         int catIndex;
@@ -171,6 +188,7 @@
         descTextField.text = t.desc;
         costTextField.text = [NSString stringWithFormat:@"$%d.%02d",
                                  (int)t.costDollars, (int)t.costCents];
+        dateLabel.text = [df stringFromDate:t.date];
         
         catIndex = 4;
         if ([t.category isEqualToString:@"Eat Out"])

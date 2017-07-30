@@ -119,13 +119,15 @@
 - (void)transactionToLabels
 {
     if (t != nil) {
+        NSDateFormatter *df;
+        
         catLabel.text = t.category;
         descLabel.text = t.desc;
         costLabel.text = [NSString stringWithFormat:@"$%d.%02d",
                              (int)t.costDollars, (int)t.costCents];
-        dateLabel.text = [NSDateFormatter localizedStringFromDate:t.date
-                             dateStyle:NSDateFormatterShortStyle
-                             timeStyle:NSDateFormatterShortStyle];
+        df = [[NSDateFormatter alloc] init];
+        [df setDateFormat:@"MM/dd/yyyy"];
+        dateLabel.text = [df stringFromDate:t.date];
     }
     else {
         catLabel.text = @"-";
