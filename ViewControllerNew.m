@@ -4,6 +4,8 @@
 
 @implementation ViewControllerNew
 {
+    int currentDateSliderVal;
+    
     DataManager *dm;
     Transaction *t;
     
@@ -81,7 +83,7 @@
 
     
     /* Enter button */
-    rect = CGRectMake(30.0, 330.0, 60.0, 25.0);
+    rect = CGRectMake(30.0, 340.0, 60.0, 25.0);
     enterButton = [[UIButton alloc] initWithFrame:rect];
     [enterButton addTarget:self action:@selector(enterButtonClicked)
                      forControlEvents:UIControlEventTouchUpInside];
@@ -163,6 +165,19 @@
     dateLabel = [[UILabel alloc] initWithFrame:rect];
     [dateLabel setFont:[dateLabel.font fontWithSize:16]];
     [self.view addSubview:dateLabel];
+    
+    
+    /* Date slider */
+    currentDateSliderVal = 10;
+    rect = CGRectMake(30.0, 290.0, 200.0, 50.0);
+    UISlider *slider = [[UISlider alloc] initWithFrame:rect];
+    [slider addTarget:self action:@selector(sliderAction:) forControlEvents:UIControlEventValueChanged];
+    [slider setBackgroundColor:[UIColor clearColor]];
+    slider.minimumValue = 0;
+    slider.maximumValue = 20.0;
+    slider.continuous = YES;
+    slider.value = 10;
+    [self.view addSubview:slider];
 }
 
 
@@ -188,7 +203,8 @@
         descTextField.text = t.desc;
         costTextField.text = [NSString stringWithFormat:@"$%d.%02d",
                                  (int)t.costDollars, (int)t.costCents];
-        dateLabel.text = [df stringFromDate:t.date];
+        date = t.date;
+        dateLabel.text = [df stringFromDate:date];
         
         catIndex = 4;
         if ([t.category isEqualToString:@"Eat Out"])
@@ -218,7 +234,7 @@
     tr = t;
     if (tr == nil) {
         tr = [[Transaction alloc] init];
-        tr.date = [NSDate date];
+        //tr.date = [NSDate date];
         
         [dm inputTransaction:tr];
     }
@@ -230,6 +246,7 @@
     tr.costDollars = d;
     catRow = [categoryPicker selectedRowInComponent:0];
     tr.category = [categories objectAtIndex:catRow];
+    tr.date = date;
 
     [self dismissViewControllerAnimated:NO completion:nil];
 }
@@ -404,4 +421,36 @@
     return [categories objectAtIndex:row];
 }
 
+
+-(void)sliderAction:(id)sender
+{
+    UISlider *slider = (UISlider*)sender;
+    int sliderValue = (int) slider.value;
+    
+    if (sliderValue != currentDateSliderVal) {
+        NSDateComponents *dayComponent = [[NSDateComponents alloc] init];
+        NSCalendar *theCalendar = [NSCalendar currentCalendar];
+ 
+        if (sliderValue > currentDateSliderVal) {
+            NSLog(@"slider value up: %i", sliderValue);
+            dayComponent.day = 1;
+        }
+        else if (sliderValue < currentDateSliderVal) {
+            NSLog(@"slider value down: %i", sliderValue);
+            dayComponent.day = -1;
+        }
+        
+        NSDate *nextDate = [theCalendar dateByAddingComponents:dayComponent
+                                        toDate:date options:0];
+        date = nextDate;
+        
+        NSDateFormatter *df;
+        df = [[NSDateFormatter alloc] init];
+        [df setDateFormat:@"MM/dd/yyyy"];
+        dateLabel.text = [df stringFromDate:date];
+        
+        
+        currentDateSliderVal = sliderValue;
+    }
+}
 @end
