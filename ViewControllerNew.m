@@ -1,3 +1,5 @@
+#import <uuid/uuid.h>
+
 #import "ViewControllerNew.h"
 #import "DataManager.h"
 #import "Transaction.h"
@@ -23,6 +25,8 @@
     
     UILabel *dateLabel;
     NSDate *date;
+    
+    NSString *uuid;
 }
 
 - (id)initWithDataManager:(DataManager *)dataMgr
@@ -189,12 +193,19 @@
     [df setDateFormat:@"MM/dd/yyyy"];
     
     if (t == nil) {
+        uuid_t uid;
+        char uidStr[40];
+        
         newTitleLabel.text = @"New Transaction";
         descTextField.text = @"";
         costTextField.text = @"";
         [categoryPicker selectRow:4 inComponent:0 animated:YES];
         date = [NSDate date];
         dateLabel.text = [df stringFromDate:date];
+        
+        uuid_generate(uid);
+        uuid_unparse_upper(uid, uidStr);
+        uuid = [NSString stringWithUTF8String:uidStr];
     }
     else {
         int catIndex;
@@ -205,6 +216,7 @@
                                  (int)t.costDollars, (int)t.costCents];
         date = t.date;
         dateLabel.text = [df stringFromDate:date];
+        uuid = t.uuid;
         
         catIndex = 4;
         if ([t.category isEqualToString:@"Eat Out"])
@@ -247,6 +259,7 @@
     catRow = [categoryPicker selectedRowInComponent:0];
     tr.category = [categories objectAtIndex:catRow];
     tr.date = date;
+    tr.uuid = uuid;
 
     [self dismissViewControllerAnimated:NO completion:nil];
 }
@@ -448,8 +461,7 @@
         df = [[NSDateFormatter alloc] init];
         [df setDateFormat:@"MM/dd/yyyy"];
         dateLabel.text = [df stringFromDate:date];
-        
-        
+
         currentDateSliderVal = sliderValue;
     }
 }

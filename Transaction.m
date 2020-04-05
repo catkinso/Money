@@ -15,6 +15,7 @@
     [encoder encodeInteger:self.costDollars forKey:@"costdollars"];
     [encoder encodeInteger:self.costCents forKey:@"costcents"];
     [encoder encodeObject:self.date forKey:@"date"];
+    [encoder encodeObject:self.uuid forKey:@"uuid"];
 }
 
  
@@ -28,6 +29,7 @@
     t.costDollars = [decoder decodeIntegerForKey:@"costdollars"];
     t.costCents = [decoder decodeIntegerForKey:@"costcents"];
     t.date = [decoder decodeObjectForKey:@"date"];
+    t.uuid = [decoder decodeObjectForKey:@"uuid"];
     
     return t;
 }

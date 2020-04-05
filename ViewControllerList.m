@@ -20,7 +20,7 @@
     UIButton *deleteButtons[5];
     
     UILabel *totalTransactionsLabel;
-    UILabel *numTransactionLabels[5];
+    UILabel *uuidTransactionLabels[5];
     
     int topDisplayedIdx;
 }
@@ -96,14 +96,14 @@
     /* Three transactions */
     for (i = 0; i < 5; i++) {
         
-        /* Transaction number label */
-        rect = CGRectMake(30.0, 10.0 + (140.0 * i), 50.0, 20.0);
-        numTransactionLabels[i] = [[UILabel alloc] initWithFrame:rect];
-        [numTransactionLabels[i] setFont:[numTransactionLabels[i].font
-                                     fontWithSize:12]];
-        numTransactionLabels[i].text = @"-";
-        numTransactionLabels[i].textColor = [UIColor grayColor];
-        numTransactionLabels[i].textAlignment = NSTextAlignmentLeft;
+        /* Transaction uuid label */
+        rect = CGRectMake(30.0, 10.0 + (140.0 * i), 300.0, 20.0);
+        uuidTransactionLabels[i] = [[UILabel alloc] initWithFrame:rect];
+        [uuidTransactionLabels[i] setFont:[uuidTransactionLabels[i].font
+                                     fontWithSize:10]];
+        uuidTransactionLabels[i].text = @"-";
+        uuidTransactionLabels[i].textColor = [UIColor grayColor];
+        uuidTransactionLabels[i].textAlignment = NSTextAlignmentLeft;
         
 
         /* Transaction edit button */
@@ -154,12 +154,14 @@
     currentIdx = topDisplayedIdx;
     for (i = 0; i < 5; i++) {
         if (currentIdx >= 0) {
-            numTransactionLabels[i].text = [[NSString alloc]
-                                       initWithFormat:@"%05d", currentIdx + 1];
-            vts[i].transactionToShow = [dm getTransactionAtIndex:currentIdx];
-
-            if ([numTransactionLabels[i] superview] == nil)
-                [uisv addSubview:numTransactionLabels[i]];
+            Transaction *t;
+            
+            t = [dm getTransactionAtIndex:currentIdx];
+            uuidTransactionLabels[i].text = t.uuid;
+            vts[i].transactionToShow = t;
+            
+            if ([uuidTransactionLabels[i] superview] == nil)
+                [uisv addSubview:uuidTransactionLabels[i]];
             
             if ([editButtons[i] superview] == nil)
                 [uisv addSubview:editButtons[i]];
@@ -168,8 +170,8 @@
                 [uisv addSubview:vts[i]];
         }
         else {
-            if ([numTransactionLabels[i] superview] != nil)
-                [numTransactionLabels[i] removeFromSuperview];
+            if ([uuidTransactionLabels[i] superview] != nil)
+                [uuidTransactionLabels[i] removeFromSuperview];
             
             if ([editButtons[i] superview] != nil)
                 [editButtons[i] removeFromSuperview];

@@ -7,5 +7,6 @@
 @property (readwrite) NSInteger costDollars;
 @property (readwrite) NSInteger costCents;
 @property (readwrite, retain) NSDate *date;
+@property (readwrite, retain) NSString *uuid;
 
 @end
