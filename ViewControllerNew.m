@@ -33,8 +33,11 @@
 {
     self = [super init];
     
-    if (self)
+    if (self) {
         dm = dataMgr;
+        
+        self.modalPresentationStyle = UIModalPresentationFullScreen;
+    }
     
     return self;
 }

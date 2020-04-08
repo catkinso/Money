@@ -19,6 +19,8 @@
     
     if (self) {
         dm = dataMgr;
+
+        self.modalPresentationStyle = UIModalPresentationFullScreen;
     }
     
     return self;
